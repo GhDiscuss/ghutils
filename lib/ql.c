@@ -7,14 +7,6 @@
 #include "json_helper.h"
 #include "curl_helper.h"
 
-void mutate(CURL *const curl, Value *const v, const char *fmt, const char *s0, const char *s1) {
-  const OElement *id = findv(v, "id");
-  char *str;
-  asprintf(&str, fmt, string(id), s0, s1);
-  simple_parse(curl, str);
-  free(str);
-}
-
 static char* escape(char *ptr, const long len) {
   char *buf = malloc(len * 2 + 1);
   long i, j;
@@ -48,7 +40,6 @@ static int file2str(FILE *f, struct String *const str, const long start) {
   free(ptr);
   return 1;
 }
-
 
 static int readtitle(FILE *f, struct String *const restrict title) {
   char *line = NULL;
@@ -101,6 +92,14 @@ static inline void edit(Value *const v, char *const fname) {
   const OElement *body = v ? findv(v, "body") : NULL;
   tempfile(fname, title, body);
   editor(fname);
+}
+
+void mutate(CURL *const curl, Value *const v, const char *fmt, const char *s0, const char *s1) {
+  const OElement *id = findv(v, "id");
+  char *str;
+  asprintf(&str, fmt, string(id), s0, s1);
+  simple_parse(curl, str);
+  free(str);
 }
 
 void create(CURL *const curl, Value *const v, const char *fmt, const uint is_new, struct String *s0) {

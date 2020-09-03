@@ -6,31 +6,9 @@
 #include "ql.h"
 #include "state.h"
 #include "discuss/pp.h"
+#include "discuss/reaction.h"
 
 #define NUSED __attribute__((unused))
-
-static Value* react(Value *const base, const int idx) {
-  const AElement *reactions = node(base, "reactions");
-  while(reactions) {
-    const OElement *content = findae(reactions, "content");
-    const OElement *user = findae(reactions, "user");
-    const OElement *viewer = findoe(user, "isViewer");
-    const int is_viewer = json_value_is_true(viewer->value);
-    const char *str = string(content);
-    if(!strcmp(str, reaction_names[idx])) {
-      if(is_viewer)
-        return reactions->value;
-    }
-    reactions = reactions->next;
-  }
-  return NULL;
-}
-
-static int create_comment(CURL *curl, Value *const base) {
-  const char *fmt = MUTATION "createTeamDiscussionComment(input:{discussionId:\\\"%s\\\",body:\\\"%s\\\"}){teamDiscussionComment{id}}}\"}";
-  create(curl, base, fmt, 1, NULL);
-  return 0;
-}
 
 static int list_orgs(CURL *curl NUSED, Value *const base) {
   AElement *e = node(base, "organizations");
@@ -89,6 +67,12 @@ static int edit_discussion(CURL *curl, Value *const base) {
   struct String title = {};
   create(curl, base, fmt, 0, &title);
   free(title.memory);
+  return 0;
+}
+
+static int create_comment(CURL *curl, Value *const base) {
+  const char *fmt = MUTATION "createTeamDiscussionComment(input:{discussionId:\\\"%s\\\",body:\\\"%s\\\"}){teamDiscussionComment{id}}}\"}";
+  create(curl, base, fmt, 1, NULL);
   return 0;
 }
 

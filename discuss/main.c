@@ -23,10 +23,8 @@ int init(struct CurlHelper* ch, struct State *state) {
 
 int run(struct CurlHelper *ch, struct State *state) {
   Value *const base = get_value(ch, state);
-  if(!base || !json_value_as_object(base)) {
-    perror("# can't find value");
+  if(!base || !json_value_as_object(base))
     return 1;
-  }
   const action_f action = get_action(state);
   return action(ch->curl, base);
 }

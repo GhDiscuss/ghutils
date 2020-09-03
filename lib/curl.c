@@ -30,7 +30,7 @@ static size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp) {
   struct String *s = (struct String*)userp;
   char *ptr = realloc(s->memory, s->size + realsize + 1);
   if(!ptr) {
-    printf("not enough memory (realloc returned NULL)\n");
+    perror("not enough memory (realloc returned NULL)\n");
     return 0;
   }
   s->memory = ptr;
@@ -75,7 +75,7 @@ Value * parse(CURL *const curl, const char *sdata) {
       return v;
     free(v);
   }
-  perror("# no data");
+  puts("# no data");
   return NULL;
 }
 
