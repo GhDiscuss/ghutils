@@ -7,7 +7,6 @@ struct CurlHelper {
   CURL *curl;
   struct curl_slist *slist;
   struct json_value_s *value;
-  struct json_value_s *base;
 };
 
 int ch_init(struct CurlHelper* ch, const char*);

@@ -19,7 +19,6 @@ struct State {
   int argc;
   char **argv;
   char *fmt;
-  char *data;
   enum action action;
 };
 

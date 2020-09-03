@@ -8,7 +8,7 @@ static int auth_token(char *c) {
   strcpy(c, "Authorization: bearer ");
   char *token = getenv("GHBOARD_TOKEN");
   if(!token) {
-    puts("please set GHBOARD_TOKEN environment variable.");
+    perror("please set GHBOARD_TOKEN environment variable.");
     return 0;
   }
   strcat(c, token);
@@ -75,7 +75,7 @@ Value * parse(CURL *const curl, const char *sdata) {
       return v;
     free(v);
   }
-  puts("# no data");
+  perror("# no data");
   return NULL;
 }
 

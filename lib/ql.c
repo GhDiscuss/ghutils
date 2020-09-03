@@ -1,5 +1,4 @@
 #define _GNU_SOURCE
-#include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -51,22 +50,25 @@ static int file2str(FILE *f, struct String *const str, const long start) {
 }
 
 
+static int readtitle(FILE *f, struct String *const restrict title) {
+  char *line = NULL;
+  size_t len = 0;
+  ssize_t read;
+  if((read = getline(&line, &len, f)) == -1)
+    return 0;
+  title->memory = escape(line, read);
+  title->size = len;
+  free(line);
+  return 1;
+}
+
 static int readfile(const char *name, struct String *const restrict title, struct String *const restrict body) {
   FILE *f = fopen(name, "r");
   if(!f)
     return 0;
-  // read title
-  char * line = NULL;
-  size_t len = 0;
-  ssize_t read;
-  if(title) {
-    if((read = getline(&line, &len, f)) == -1) {
-      printf("can't read file '%s'.\n", name);
-      return 0;
-    }
-    title->memory = escape(line, read);
-    title->size = len;
-    free(line);
+  if(title && !readtitle(f, title)) {
+    perror("can't read tmp file");
+    return 0;
   }
   long pos = ftell(f);
   const int ret = file2str(f, body, pos);
@@ -90,19 +92,15 @@ static void tempfile(char *const fname, const OElement *restrict title, const OE
 
 static inline void editor(const char *fname) {
   char cmd[64]; // could be smaller
-  sprintf(cmd, "vim %.16s", fname);
+  sprintf(cmd, "vim %.16s", fname); // could use $EDITOR
   system(cmd);
-}
-
-static inline void _edit(char *const fname, const OElement *restrict title, const OElement *body) {
-  tempfile(fname, title, body);
-  editor(fname);
 }
 
 static inline void edit(Value *const v, char *const fname) {
   const OElement *title = v ? findv(v, "title") : NULL;
   const OElement *body = v ? findv(v, "body") : NULL;
-  _edit(fname, title, body);
+  tempfile(fname, title, body);
+  editor(fname);
 }
 
 void create(CURL *const curl, Value *const v, const char *fmt, const uint is_new, struct String *s0) {

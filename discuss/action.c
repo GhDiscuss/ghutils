@@ -121,7 +121,6 @@ static int name##_comment(CURL *curl, Value *const base) { \
   }\
   return 0;\
 }
-// renaming
 react_comment(confused, 0, CONFUSED)
 react_comment(eyes, 1, EYES)
 react_comment(heart, 2, HEART)

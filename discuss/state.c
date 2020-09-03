@@ -50,6 +50,6 @@ int init_state(struct State *s) {
   }
   if((s->fmt = fmts[s->action][s->argc]))
     return 1;
-  puts("# undefined action");
+  perror("# undefined action");
   return 0;
 }
