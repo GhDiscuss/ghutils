@@ -10,44 +10,34 @@
 
 #define NUSED __attribute__((unused))
 
-static int list_orgs(CURL *curl NUSED, Value *const base) {
-  AElement *e = node(base, "organizations");
-  while(e) {
-    pp2(e->value);
-    e = e->next;
+#define ITERATE(name, action)      \
+  AElement *e = node(base, #name); \
+  while(e) {                       \
+    action                         \
+    e = e->next;                   \
   }
+
+static int list_orgs(CURL *curl NUSED, Value *const base) {
+  ITERATE(organizations, pp_meta(e->value);)
   return 0;
 }
 
 static int list_teams(CURL *curl NUSED, Value *const base) {
-  AElement *e = node(base, "teams");
-  while(e) {
-    pp2(e->value);
-    e = e->next;
-  }
+  ITERATE(teams, pp_meta(e->value);)
   return 0;
 }
 
 static int list_discussions(CURL *curl NUSED, Value *const base) {
-  AElement *e = node(base, "discussions");
-  while(e) {
-    printf("\n");
-    pp1(e->value, "##");
-    e = e->next;
-  }
+  ITERATE(discussions, printf("\n"); pp(e->value, "##");)
   return 0;
 }
 
 static int pp_discussion(CURL *curl NUSED, Value *const base) {
-  pp1(base, "#");
-  AElement *e = node(base, "comments");
-  while(e) {
-    printf("  \n\n");
-    pp1(e->value, "###");
-    e = e->next;
-  }
+  pp(base, "#");
+  ITERATE(comments, printf("  \n\n"); pp(e->value, "###");)
   return 0;
 }
+
 static int create_discussion(CURL *curl, Value *const base) {
   const char *fmt = MUTATION "createTeamDiscussion(input:{teamId:\\\"%s\\\",title:\\\"%s\\\",body:\\\"%s\\\"}){teamDiscussion{body}}}\"}";
   struct String title = {};
@@ -89,22 +79,31 @@ static int edit_comment(CURL *curl, Value *const base) {
 }
 
 static int pp_comment(CURL *curl NUSED, Value *const base) {
-  pp1(base, "###");
+  pp(base, "###");
   return 0;
+}
+
+static int addReaction(CURL *curl, Value *const base) {
+  char* fmt = MUTATION "addReaction(input:{subjectId:\\\"%s\\\",content:%s}){clientMutationId}}\"}";
+  mutate(curl, base, fmt, 0, NULL);
+  return 0;
+}
+
+static int removeReaction(CURL *curl, Value *const base) {
+  char* fmt = MUTATION "removeReaction(input:{subjectId:\\\"%s\\\",content:%s}){clientMutationId}}\"}";
+  mutate(curl, base, fmt, 0, NULL);
+  return 0;
+}
+
+static int _react_comment(CURL *curl, Value *const base, const char *emoj, const unsigned int idx) {
+  return (react(base, idx) ? addReaction : removeReaction)(curl, base);
 }
 
 #define react_comment(name,idx,emoj) \
 static int name##_comment(CURL *curl, Value *const base) { \
-  Value *const v = react(base, idx);\
-  if(!v) {\
-  char* fmt = MUTATION "addReaction(input:{subjectId:\\\"%s\\\",content:"#emoj"}){clientMutationId}}\"}";\
-  mutate(curl, base, fmt, 0, NULL);\
-  } else {\
-  char* fmt = MUTATION "removeReaction(input:{subjectId:\\\"%s\\\",content:"#emoj"}){clientMutationId}}\"}";\
-  mutate(curl, base, fmt, 0, NULL);\
-  }\
-  return 0;\
+  return _react_comment(curl, base, #emoj, idx);           \
 }
+
 react_comment(confused, 0, CONFUSED)
 react_comment(eyes, 1, EYES)
 react_comment(heart, 2, HEART)

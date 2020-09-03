@@ -101,14 +101,14 @@ static void header_pp(Value *v, const char *prefix) {
   printf("\n");
 }
 
-void pp1(Value *v, const char *prefix) {
+void pp(Value *v, const char *prefix) {
   header_pp(v, prefix);
   title_pp(v);
   body_pp(v);
   reactions_pp(v);
 }
 
-void pp2(Value *const v) {
+void pp_meta(Value *const v) {
   name_pp(v);
   description_pp(v);
   member_pp(v, "members");

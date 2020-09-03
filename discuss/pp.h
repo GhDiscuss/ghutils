@@ -1,2 +1,2 @@
-void pp1(Value *const v, const char *prefix);
-void pp2(Value *const v);
+void pp(Value *const v, const char *prefix);
+void pp_meta(Value *const v);
